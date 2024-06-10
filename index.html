@@ -3,15 +3,59 @@
 <head>
     <title>Geolocation Map with Path</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: calc(100% - 100px);
+            width: 100%;
+        }
+        .header, .footer {
+            height: 50px;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .footer {
+            position: absolute;
+            bottom: 0;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            display: none;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-<div id="map" style="height: 400px; width: 80%;"></div>
+<div class="header">Geolocation Map Tracker</div>
+<div id="map"></div>
+<div class="footer">Tracking your movements...</div>
+<div class="loading" id="loading">Loading your location...</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
     let map, pathLine;
     let pathCoordinates = [];
+    const loadingIndicator = document.getElementById('loading');
 
     function initMap() {
         map = L.map('map').setView([0, 0], 13);
@@ -30,12 +74,15 @@
                 maximumAge: 0,
                 timeout: 10000
             });
+            loadingIndicator.style.display = 'block';
         } else {
             alert("Geolocation is not supported by this browser.");
         }
     }
 
     function updatePosition(position) {
+        loadingIndicator.style.display = 'none';
+
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
@@ -53,20 +100,25 @@
     }
 
     function showError(error) {
+        loadingIndicator.style.display = 'none';
+
+        let errorMessage;
         switch(error.code) {
             case error.PERMISSION_DENIED:
-                alert("User denied the request for Geolocation.");
+                errorMessage = "User denied the request for Geolocation.";
                 break;
             case error.POSITION_UNAVAILABLE:
-                alert("Location information is unavailable.");
+                errorMessage = "Location information is unavailable.";
                 break;
             case error.TIMEOUT:
-                alert("The request to get user location timed out.");
+                errorMessage = "The request to get user location timed out.";
                 break;
             case error.UNKNOWN_ERROR:
-                alert("An unknown error occurred.");
+                errorMessage = "An unknown error occurred.";
                 break;
         }
+        alert(errorMessage);
+        document.body.insertAdjacentHTML('beforeend', `<div class="error">${errorMessage}</div>`);
     }
 
     window.onload = function() {
