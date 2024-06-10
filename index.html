@@ -75,7 +75,9 @@
 
     function initMap() {
         console.log("Initializing map...");
-        map = L.map('map').setView([0, 0], 13);
+        map = L.map('map', {
+            tap: false // Disable tap handler for Leaflet to handle touch events
+        }).setView([0, 0], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
