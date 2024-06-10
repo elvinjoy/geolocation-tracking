@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geolocation Map with Path</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+
+<div id="map" style="height: 400px; width: 80%;"></div>
+
+<script>
+    let map, pathLine;
+    let pathCoordinates = [];
+
+    function initMap() {
+        map = L.map('map').setView([0, 0], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        pathLine = L.polyline(pathCoordinates, {color: 'red'}).addTo(map);
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(updatePosition, showError, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 10000
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function updatePosition(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        // Add new position to the path coordinates
+        pathCoordinates.push([lat, lon]);
+
+        // Update the map view and path line
+        map.setView([lat, lon], 13);
+        pathLine.setLatLngs(pathCoordinates);
+
+        // Add a marker at the current position
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup('You are here.')
+            .openPopup();
+    }
+
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    window.onload = function() {
+        initMap();
+        getLocation();
+    };
+</script>
+
+</body>
+</html>
